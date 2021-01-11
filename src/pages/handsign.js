@@ -44,21 +44,13 @@ export default function Handsign() {
     let gamestate = 'started';
 
     async function runHandpose() {
-        // setCamState('on');
         const net = await handpose.load();
-        console.log("Handpose model loaded.");
+        // console.log("Handpose model loaded.");
         _emojiList();
-        // onOpen();  Loop and detect hands
         setInterval(() => {
             detect(net);
         }, 100);
     };
-
-    function restartGame() {
-        _emojiList();
-        clearData();
-        gamestate = 'started';
-    }
 
     function _emojiList() {
         emojiList = generateEmojis();
@@ -89,34 +81,6 @@ export default function Handsign() {
         return password;
     }
 
-    function clearData() {
-        currentEmoji = 0;
-        points = 0;
-
-        // document
-        //     .querySelector('#emojis')
-        //     .innerText = "";
-
-        document
-            .getElementById('points')
-            .innerHTML = points;
-        console.log('data cleared', currentEmoji, points);
-
-        // document     .querySelector('#singmoji')     .innerText = "love emoji untuk
-        // mulai";
-
-        document
-            .getElementById('emojimage')
-            .removeAttribute('src')
-    }
-
-
-
-    function tutorial(){
-        const tutorText= document.getElementsByClassName('tutor-text');
-        tutorText.innerText = "make a hand gesture based on emoji shown below"
-
-    }
 
     async function detect(net) {
 
@@ -161,7 +125,7 @@ export default function Handsign() {
                 ]);
 
                 const estimatedGestures = await GE.estimate(hand[0].landmarks, 6.5);
-                console.log(estimatedGestures); 
+                // console.log(estimatedGestures); 
                 // document.querySelector('.pose-data') .innerHTML =JSON.stringify(estimatedGestures.poseData, null, 2);
 
                 if (dataState === "on") {}
@@ -182,8 +146,6 @@ export default function Handsign() {
                     if (estimatedGestures.gestures[maxConfidence].name === 'thumbs_up' && gamestate !== 'played') {
                         _emojiList();
                         gamestate = 'played';
-                        // console.log('game_state', gamestate); console.log('currentEmoji',
-                        // currentEmoji, 'emojilist.length', emojiList.length); runCountdown();
                         document
                             .getElementById('emojimage')
                             .classList
@@ -210,25 +172,14 @@ export default function Handsign() {
                             .setAttribute('src', emojiList[currentEmoji].src);
 
                         console.log('points', points);
-                        // const match = estimatedGestures.find(g => emojiList[currentEmoji].alt ===
-                        // g.gestures.name);
                         if (emojiList[currentEmoji].alt === estimatedGestures.gestures[maxConfidence].name) {
                             // ganti emoji document
-                            // .querySelector(`[alt=${estimatedGestures.gestures[maxConfidence].name}]`)
-                            // .classList     .add('found');
                             currentEmoji++;
                             //nambah point
                             points += 10;
-                            // emojiEffect();
-                            
-                            // document
-                            //     .getElementById('points')
-                            //     .innerHTML = points;
-                            //animasi nambah point (framer asoys) bunyi cengkring nambah point
                         }
                         setEmoji(estimatedGestures.gestures[maxConfidence].name);
                         
-                        // console.log(emoji);
                     } else if (gamestate === 'finished') {
                         
                         return;
@@ -236,7 +187,6 @@ export default function Handsign() {
                 }
 
             }
-            // emojiEffect();
             // Draw mesh 
             // const ctx = canvasRef.current.getContext("2d");
             // drawHand(hand, ctx);
@@ -255,21 +205,12 @@ export default function Handsign() {
         }
     }
 
-    function showData() {
-        if (dataState === "on") {
-            setDataState('off');
-        } else {
-            setDataState('on');
-        }
-    }
-
 
     return (
         <ChakraProvider>
             <Helmet>
           <meta charSet="utf-8" />
           <title>Handmoji | Play</title>
-          {/* <link rel="canonical" href="http://mysite.com/example" /> */}
         </Helmet>
             <Container maxW="xl" centerContent>
                 <VStack spacing={4} align="center">
@@ -277,21 +218,16 @@ export default function Handsign() {
                     <Heading as="h3" size="md" className="tutor-text" color="white" textAlign="center"></Heading>
                     <Box h="20px"></Box>
                 </VStack>
-
+        
                 <Heading as="h1" size="lg" id="app-title" color="white" textAlign="center">🧙‍♀️ Loading the Magic 🧙‍♂️</Heading>
                 
 
-                {/* <div className="responsive-embed">
-            </div> */}
 
                 <div id="webcam-container">
                     {camState === 'on'
                         ? <Webcam id="webcam" ref={webcamRef}/>
                         : <div id="webcam" background="black"></div>}
 
-                    {/* <div id="emojis"> */}
-                        
-                    {/* </div> */}
 
                     {emoji !== null || 'undefined'
                         ? (<div style={{
@@ -326,15 +262,7 @@ export default function Handsign() {
                 <Image boxSize="80px" objectFit="cover" id='emojimage'/> 
 {/* <pre className="pose-data" color="white" style={{position: 'fixed', top: '150px', left: '10px'}} >Pose data</pre> */}
 
-            </Container>
-
-            {/* <Stack id="start-button" spacing={4} direction="row" align="center"> */}
-                {/* <Button colorScheme="blue" onClick={restartGame}>data</Button> */}
-                {/* <Button colorScheme="blue" onClick={restartGame}>START</Button> */}
-                {/* <Button onClick={turnOffCamera} colorScheme="blue">matiin kamera</Button> */}
-                {/* <IconButton aria-label="Search database" icon={<SearchIcon />} /> */}
-            {/* </Stack> */}
-            
+            </Container>            
 
         </ChakraProvider>
     )
