@@ -18,6 +18,8 @@ import {
     Box,
     VStack,
 
+    useToast,
+
     ChakraProvider
 } from '@chakra-ui/react'
 
@@ -28,6 +30,7 @@ import '../styles/App.css'
 import '@tensorflow/tfjs-backend-webgl';
 
 export default function Handsign() {
+    const toast = useToast()
     const webcamRef = useRef(null);
     const canvasRef = useRef(null);
     const [camState,
@@ -42,11 +45,12 @@ export default function Handsign() {
     let currentEmoji = 0;
     let points = 0;
     let gamestate = 'started';
+    let startedAt = null;
+    let finishedAt = null;
 
     async function runHandpose() {
         const net = await handpose.load();
         // console.log("Handpose model loaded.");
-        _emojiList();
         setInterval(() => {
             detect(net);
         }, 100);
@@ -145,12 +149,13 @@ export default function Handsign() {
                     //setting up game state, looking for love emoji
                     if (estimatedGestures.gestures[maxConfidence].name === 'thumbs_up' && gamestate !== 'played') {
                         _emojiList();
+                        startedAt = new Date();
                         gamestate = 'played';
                         document
                             .getElementById('emojimage')
                             .classList
                             .add('play');
-                            document
+                        document
                             .querySelector('.tutor-text')
                             .innerText = "make a hand gesture based on emoji shown below";
                     } else if (gamestate === 'played') {
@@ -163,6 +168,14 @@ export default function Handsign() {
                             _emojiList();
                             currentEmoji = 0;
                             points = 0;
+                            gamestate = 'finished';
+                            document
+                              .getElementById('emojimage')
+                              .classList
+                              .remove('play');
+                            document
+                              .querySelector('.tutor-text')
+                              .innerText = "";
                             return;
                         }
 
@@ -181,7 +194,18 @@ export default function Handsign() {
                         setEmoji(estimatedGestures.gestures[maxConfidence].name);
                         
                     } else if (gamestate === 'finished') {
-                        
+                        finishedAt = new Date();
+                        const timespan = finishedAt - startedAt;
+                        toast({
+                          title: "Finished.",
+                          description: `Your finished in ${(timespan/1000).toFixed(2)}s`,
+                          status: "success",
+                          duration: null,
+                          isClosable: true,
+                          onCloseComplete: () => gamestate = 'started'
+                        })
+                        gamestate = 'alerted';
+                        setEmoji(null)
                         return;
                     }
                 }
@@ -229,7 +253,7 @@ export default function Handsign() {
                         : <div id="webcam" background="black"></div>}
 
 
-                    {emoji !== null || 'undefined'
+                    {emoji
                         ? (<div style={{
                             position: "absolute",
                             marginLeft: "auto",
